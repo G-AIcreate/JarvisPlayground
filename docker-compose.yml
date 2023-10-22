@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  nginx:
+    build:
+      context: .
+      dockerfile: nginx/Dockerfile
+    ports:
+      - 8080:80
+    depends_on:
+      - voice-assistance-service
+      - gjarvis-website
+    networks:
+      - jarvis-net
+
+  voice-assistance-service:
+    build:
+      context: ./backend-services/voice-assistance-service
+    ports:
+      - "8081:8080"
+    networks:
+      - jarvis-net
+
+  gjarvis-website:
+    build:
+      context: ./frontend-services/GJarvis-frontend
+    ports:
+      - "3000:3000"
+    networks:
+      - jarvis-net
+      
+
+
+networks:
+  jarvis-net:
+    driver: bridge
