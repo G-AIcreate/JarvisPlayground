@@ -25,7 +25,7 @@
     </v-navigation-drawer>
 
     <v-main>
-      <v-container fluid>
+      <v-container fluid class="pa-0 pt-3">
         <v-row
           v-for="(msg, index) in mergeMsgs"
           :key="index"
@@ -46,16 +46,16 @@
     </v-main>
     <v-footer app
       ><v-row class="d-flex align-center">
-        <v-col cols="1" class="d-flex justify-end"> </v-col>
+        <v-spacer />
         <v-col cols="10">
           <v-textarea
             rows="1"
             max-rows="5"
+            auto-grow
+            v-model="newUserMsg"
             prepend-inner-icon="mdi-microphone"
             @click:prepend-inner="voiceInput()"
-            auto-grow
             hide-details="auto"
-            v-model="newUserMsg"
             placeholder="Send a message"
             style="background: white"
             ><template #append-inner>
@@ -67,7 +67,7 @@
               ></v-btn></template
           ></v-textarea>
         </v-col>
-        <v-col cols="1"> </v-col>
+        <v-spacer />
       </v-row>
     </v-footer>
   </v-app>
@@ -128,7 +128,7 @@ const sendMsg = (msg) => {
   color: white;
   background: rgb(111, 116, 129);
 }
-
+  
 /* .v-field__append-inner {
   align-items: flex-end;
   background: red;
