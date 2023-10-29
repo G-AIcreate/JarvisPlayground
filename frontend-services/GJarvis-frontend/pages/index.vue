@@ -58,6 +58,8 @@
             hide-details="auto"
             placeholder="Send a message"
             style="background: white"
+            @keydown.enter.exact.prevent
+            @keydown.enter="checkPreSend(newUserMsg) ?? sendMsg(newUserMsg)"
             ><template #append-inner>
               <v-btn
                 small
@@ -128,7 +130,7 @@ const sendMsg = (msg) => {
   color: white;
   background: rgb(111, 116, 129);
 }
-  
+
 /* .v-field__append-inner {
   align-items: flex-end;
   background: red;
