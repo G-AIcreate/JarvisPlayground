@@ -67,7 +67,7 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 const items = ref([
   { text: "My Files", icon: "mdi-folder" },
   { text: "Shared with me", icon: "mdi-account-multiple" },
@@ -78,8 +78,39 @@ const items = ref([
   { text: "Backups", icon: "mdi-cloud-upload" },
 ]);
 
+// const { isSupported, isListening, isFinal, result, start, stop } =
+//   useSpeechRecognition({
+//     lang: "ja",
+//     interimResults: true,
+//     continuous: true,
+//   });
+
+let Recognition
+let recognition
+
+onMounted(() => {
+  Recognition =
+    window.SpeechRecognition || window.webkitSpeechRecognition;
+  recognition = new Recognition();
+  recognition.lang = "ja";
+  recognition.continuous = true;
+  recognition.onresult = (e) => {
+    newUserMsg.value = e.results[0][0].transcript;
+  };
+});
+
 const newUserMsg = ref("");
 const mergeMsgs = ref([]);
+
+const voiceInput = () => {
+  recognition.start(); 
+};
+
+const checkPreSend = () => {
+  if (newUserMsg.value.trim() == "") {
+    return true;
+  }
+};
 
 const sendMsg = (msg) => {
   if (newUserMsg.value == "") {
@@ -93,6 +124,7 @@ const sendMsg = (msg) => {
     class: "llama",
   });
   newUserMsg.value = "";
+  recognition.stop()
 };
 </script>
 <style scoped>
