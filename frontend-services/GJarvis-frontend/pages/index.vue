@@ -13,8 +13,7 @@
           v-for="(item, i) in items"
           :key="i"
           :value="item"
-          color="blue"
-        >
+          color="blue">
           <template v-slot:prepend>
             <v-icon :icon="item.icon"></v-icon>
           </template>
@@ -29,8 +28,7 @@
         <v-row
           v-for="(msg, index) in mergeMsgs"
           :key="index"
-          :class="msg.class"
-        >
+          :class="msg.class">
           <v-spacer />
           <v-col cols="1" class="d-flex justify-center align-center">
             <v-icon :icon="msg.icon"></v-icon>
@@ -53,20 +51,28 @@
             max-rows="5"
             auto-grow
             v-model="newUserMsg"
-            prepend-inner-icon="mdi-microphone"
-            @click:prepend-inner="voiceInput()"
             hide-details="auto"
             placeholder="Send a message"
             style="background: white"
             @keydown.enter.exact.prevent
             @keydown.enter="checkPreSend(newUserMsg) ?? sendMsg(newUserMsg)"
-            ><template #append-inner>
+            ><template #prepend-inner>
+              <v-icon
+                v-if="!recording"
+                icon="mdi-microphone"
+                @click="startRecord"></v-icon>
+              <v-icon
+                v-else
+                icon="mdi-square"
+                @click="stopRecord"
+                style="color: red"></v-icon>
+            </template>
+            <template #append-inner>
               <v-btn
                 small
                 :disabled="checkPreSend(newUserMsg)"
                 icon="mdi-send"
-                @click="sendMsg(newUserMsg)"
-              ></v-btn></template
+                @click="sendMsg(newUserMsg)"></v-btn></template
           ></v-textarea>
         </v-col>
         <v-spacer />
@@ -94,27 +100,32 @@ const items = ref([
 //     continuous: true,
 //   });
 
-// let Recognition
-// let recognition
+let Recognition;
+let recognition;
 
 onMounted(() => {
-  const Recognition =
-    window.SpeechRecognition || window.webkitSpeechRecognition;
-  const recognition = new Recognition();
+  Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  recognition = new Recognition();
   recognition.lang = "ja";
   recognition.continuous = true;
   recognition.onresult = (e) => {
     newUserMsg.value = e.results[0][0].transcript;
   };
-  $textField.value.addEventListener("click", recognition.start())
 });
+
+const recording = ref(false);
 
 const newUserMsg = ref("");
 const mergeMsgs = ref([]);
 
-const voiceInput = () => {
-  recognition.start(); 
-  // onStart()
+const startRecord = () => {
+  recording.value = true;
+  recognition.start();
+};
+
+const stopRecord = () => {
+  recording.value = false;
+  recognition.stop();
 };
 
 const checkPreSend = () => {
@@ -132,7 +143,7 @@ const sendMsg = (msg) => {
     class: "llama",
   });
   newUserMsg.value = "";
-  recognition.stop()
+  stopRecord();
 };
 </script>
 <style lang="scss" scoped>
