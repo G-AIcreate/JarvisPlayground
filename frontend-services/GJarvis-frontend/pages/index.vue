@@ -13,8 +13,7 @@
           v-for="(item, i) in items"
           :key="i"
           :value="item"
-          color="blue"
-        >
+          color="blue">
           <template v-slot:prepend>
             <v-icon :icon="item.icon"></v-icon>
           </template>
@@ -29,8 +28,7 @@
         <v-row
           v-for="(msg, index) in mergeMsgs"
           :key="index"
-          :class="msg.class"
-        >
+          :class="msg.class">
           <v-spacer />
           <v-col cols="1" class="d-flex justify-center align-center">
             <v-icon :icon="msg.icon"></v-icon>
@@ -53,20 +51,28 @@
             max-rows="5"
             auto-grow
             v-model="newUserMsg"
-            prepend-inner-icon="mdi-microphone"
-            @click:prepend-inner="voiceInput()"
             hide-details="auto"
             placeholder="Send a message"
             style="background: white"
             @keydown.enter.exact.prevent
-            @keydown.enter="checkPreSend(newUserMsg) ?? sendMsg(newUserMsg)"
-            ><template #append-inner>
+            @keydown.enter="checkPreSend() ?? sendMsg(newUserMsg)"
+            ><template #prepend-inner>
+              <v-icon
+                v-if="!recording"
+                icon="mdi-microphone"
+                @click="startRecord"></v-icon>
+              <v-icon
+                v-else
+                icon="mdi-square"
+                @click="stopRecord"
+                style="color: red"></v-icon>
+            </template>
+            <template #append-inner>
               <v-btn
                 small
-                :disabled="checkPreSend(newUserMsg)"
+                :disabled="checkPreSend()"
                 icon="mdi-send"
-                @click="sendMsg(newUserMsg)"
-              ></v-btn></template
+                @click="sendMsg(newUserMsg)"></v-btn></template
           ></v-textarea>
         </v-col>
         <v-spacer />
@@ -75,9 +81,28 @@
   </v-app>
 </template>
 
-<script setup>
-import { ref } from "vue";
-const items = ref([
+<script setup lang="ts">
+import { ref, onMounted } from "vue";
+
+type Items = {
+  text: string,
+  icon: string
+}
+
+type Msg = {
+  icon: string,
+  msg: string,
+  class: string
+}
+
+declare global {
+  interface Window {
+    SpeechRecognition: any,
+    webkitSpeechRecognition: any
+  }
+}
+
+const items = ref<Items[]>([
   { text: "My Files", icon: "mdi-folder" },
   { text: "Shared with me", icon: "mdi-account-multiple" },
   { text: "Starred", icon: "mdi-star" },
@@ -87,20 +112,49 @@ const items = ref([
   { text: "Backups", icon: "mdi-cloud-upload" },
 ]);
 
-const newUserMsg = ref("");
-const mergeMsgs = ref([]);
+/* 録音の機能を追加 */
+let Recognition: any;
+let recognition: { lang: string; continuous: boolean; onresult: (e: any) => void; start: () => void; stop: () => void; };
+onMounted(() => {
+  Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  recognition = new Recognition();
+  recognition.lang = "ja";
+  recognition.continuous = true;
+  recognition.onresult = (e: { results: { transcript: string; }[][]; }) => {
+    newUserMsg.value = e.results[0][0].transcript;
+  };
+});
 
-const voiceInput = () => {
-  alert("Your voice is coming soon");
+/* 録音中かどうかを判定 */
+const recording = ref<boolean>(false);
+
+/* 新規メッセージ */
+const newUserMsg = ref<string>("");
+
+/* ユーザーとAIのメッセージを1つの配列にする */
+const mergeMsgs = ref<Msg[]>([]);
+
+/* 録音を開始 */
+const startRecord = () => {
+  recording.value = true;
+  recognition.start();
 };
 
+/* 録音を停止 */
+const stopRecord = () => {
+  recording.value = false;
+  recognition.stop();
+};
+
+/* 送信前に空かどうかを判定 */
 const checkPreSend = () => {
   if (newUserMsg.value.trim() == "") {
     return true;
   }
 };
 
-const sendMsg = (msg) => {
+/* メッセージを送信 */
+const sendMsg = (msg: string) => {
   mergeMsgs.value.push({ icon: "mdi-account", msg: msg, class: "user" });
   const newResMsg = "Your Message is 「" + msg + "」";
   mergeMsgs.value.push({
@@ -109,9 +163,10 @@ const sendMsg = (msg) => {
     class: "llama",
   });
   newUserMsg.value = "";
+  stopRecord();
 };
 </script>
-<style scoped>
+<style lang="scss" scoped>
 .v-navigation-drawer {
   color: white;
   background: rgb(36, 36, 36);
