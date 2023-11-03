@@ -55,7 +55,7 @@
             placeholder="Send a message"
             style="background: white"
             @keydown.enter.exact.prevent
-            @keydown.enter="checkPreSend(newUserMsg) ?? sendMsg(newUserMsg)"
+            @keydown.enter="checkPreSend() ?? sendMsg(newUserMsg)"
             ><template #prepend-inner>
               <v-icon
                 v-if="!recording"
@@ -70,7 +70,7 @@
             <template #append-inner>
               <v-btn
                 small
-                :disabled="checkPreSend(newUserMsg)"
+                :disabled="checkPreSend()"
                 icon="mdi-send"
                 @click="sendMsg(newUserMsg)"></v-btn></template
           ></v-textarea>
@@ -81,9 +81,28 @@
   </v-app>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted } from "vue";
-const items = ref([
+
+type Items = {
+  text: string,
+  icon: string
+}
+
+type Msg = {
+  icon: string,
+  msg: string,
+  class: string
+}
+
+declare global {
+  interface Window {
+    SpeechRecognition: any,
+    webkitSpeechRecognition: any
+  }
+}
+
+const items = ref<Items[]>([
   { text: "My Files", icon: "mdi-folder" },
   { text: "Shared with me", icon: "mdi-account-multiple" },
   { text: "Starred", icon: "mdi-star" },
@@ -93,48 +112,49 @@ const items = ref([
   { text: "Backups", icon: "mdi-cloud-upload" },
 ]);
 
-// const { isSupported, isListening, isFinal, result, start, stop } =
-//   useSpeechRecognition({
-//     lang: "ja",
-//     interimResults: true,
-//     continuous: true,
-//   });
-
-let Recognition;
-let recognition;
-
+/* 録音の機能を追加 */
+let Recognition: any;
+let recognition: { lang: string; continuous: boolean; onresult: (e: any) => void; start: () => void; stop: () => void; };
 onMounted(() => {
   Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
   recognition = new Recognition();
   recognition.lang = "ja";
   recognition.continuous = true;
-  recognition.onresult = (e) => {
+  recognition.onresult = (e: { results: { transcript: string; }[][]; }) => {
     newUserMsg.value = e.results[0][0].transcript;
   };
 });
 
-const recording = ref(false);
+/* 録音中かどうかを判定 */
+const recording = ref<boolean>(false);
 
-const newUserMsg = ref("");
-const mergeMsgs = ref([]);
+/* 新規メッセージ */
+const newUserMsg = ref<string>("");
 
+/* ユーザーとAIのメッセージを1つの配列にする */
+const mergeMsgs = ref<Msg[]>([]);
+
+/* 録音を開始 */
 const startRecord = () => {
   recording.value = true;
   recognition.start();
 };
 
+/* 録音を停止 */
 const stopRecord = () => {
   recording.value = false;
   recognition.stop();
 };
 
+/* 送信前に空かどうかを判定 */
 const checkPreSend = () => {
   if (newUserMsg.value.trim() == "") {
     return true;
   }
 };
 
-const sendMsg = (msg) => {
+/* メッセージを送信 */
+const sendMsg = (msg: string) => {
   mergeMsgs.value.push({ icon: "mdi-account", msg: msg, class: "user" });
   const newResMsg = "Your Message is 「" + msg + "」";
   mergeMsgs.value.push({
