@@ -1,0 +1,82 @@
+version: "3.8"
+
+services:
+  nginx:
+    build:
+      context: .
+      dockerfile: nginx/Dockerfile
+    ports:
+      - 8080:80
+    depends_on:
+      - gjarvis-bff
+      - gjarvis-service
+      - gjarvis-website
+    networks:
+      - jarvis-net
+    #dev env
+    # volumes:
+    #   - ./nginx/nginx.conf:/etc/nginx/nginx.conf  # 挂载你的 Nginx 配置文件
+    #   - ./nginx/html:/usr/share/nginx/html  # 挂载静态文件
+    # 复制Nuxt.js生成的文件到Nginx容器
+
+  gjarvis-service:
+    build:
+      context: ./backend-services/gjarvis-service
+    ports:
+      - "8082:8081"
+    networks:
+      - jarvis-net
+
+  gjarvis-bff:
+    build:
+      context: ./bff-services/gjarvis-bff
+    ports:
+      - "8081:8080"
+    networks:
+      - jarvis-net
+
+  gjarvis-website:
+    build:
+      context: ./frontend-services/gjarvis-frontend
+    ports:
+      - "3000:3000"
+    networks:
+      - jarvis-net
+
+networks:
+  jarvis-net:
+    driver: bridge
+
+  # ai-model-training-service:
+  #   build: ./ai-model-training-service
+  #   ports:
+  #     - "8000:8000"
+# http://localhost:8081 → 直接访问Go服务
+# http://localhost:8080/api/ → 通过nginx代理访问Go服务
+
+# 在每个需要数据库的服务目录下的 db/ 目录中包含了该服务的数据库相关文件。
+# models/ 存放 ORM 模型或者数据库模式定义。
+# migrations/ 包含数据库迁移脚本。
+# 如果你的数据库也是容器化的（例如，运行在 Docker 中的 PostgreSQL 实例），它们的配置和 Dockerfile 可能会放在 infrastructure/databases/ 下面。
+# 每个服务中的 db/ 目录包含与该服务相关的数据库模型和迁移脚本。如果你的数据库运行在 Docker 容器中，那么 infrastructure/databases/
+
+# 1. infrastructure/databases
+# 此目录通常包含关于如何设置和配置数据库实例的信息。例如：
+
+# Dockerfile: 说明如何构建数据库的 Docker 镜像（如果您不使用官方镜像的话）。
+# 配置文件: 如 postgres.conf，这可能包括数据库的配置设置，例如内存使用、连接数等。
+# 这里定义的数据库实例通常用作在 Docker Compose 中定义的服务，并且是可被其他服务（例如后端服务）访问的。
+
+# 2. backend-services/.../db
+# 在每个服务的 db 目录下，通常包含关于如何与该服务相关联的特定数据库交互的代码和迁移脚本。例如：
+
+# models/: 包含该服务用到的数据库模型的定义。
+# migrations/: 包含数据库迁移脚本，这些脚本说明了如何更新数据库的结构（例如，添加/删除列、创建新表等）。
+# 这些文件主要用于在服务的代码中，定义如何与数据库进行交互（例如，如何查询数据、插入新记录等）。
+
+# 举例说明：
+# 当一个服务（如 voice-assistance-service）启动时，它会连接到一个数据库实例。这个数据库实例的配置和启动信息定义在 infrastructure/databases/voice-assistance-db 目录下。
+
+# voice-assistance-service 服务中的代码可能使用在 voice-assistance-service/db/models/ 目录中定义的模型与数据库进行交互。
+
+# 数据库的结构（表结构、索引等）可能由在 voice-assistance-service/db/migrations/ 目录下的迁移脚本定义和管理。
