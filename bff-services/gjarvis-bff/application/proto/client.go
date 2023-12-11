@@ -15,6 +15,7 @@ var (
 	addr = flag.String("addr", "localhost:50051", "the address to connect to")
 )
 
+// todo parameter wrong, it may be (sessionId, textMessage string)
 func processTextMessage(textMessage *pb.TextMessage) (*pb.JarvisResponse, error) {
 	// TODO switch to tls in PROD
 	conn, err := grpc.Dial(*addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
