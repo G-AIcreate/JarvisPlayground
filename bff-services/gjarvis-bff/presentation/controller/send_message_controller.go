@@ -6,6 +6,7 @@ import (
 
 	// todo import problem needs to be fixed
 	usecase "gjarvis-bff/application/usecase"
+	presentation_dto "gjarvis-bff/presentation/dto"
 
 	_ "github.com/go-chi/chi/v5"
 )
@@ -27,16 +28,16 @@ func NewSendMessageController(usecase usecase.SendMessageUsecase) *SendMessageCo
 // SendText - Send text message to jarvis
 func (s *SendMessageController) SendText(w http.ResponseWriter, r *http.Request) {
 	// todo define TextMessage
-	var textMessage TextMessage // 假设 TextMessage 已定义
+	var textMessageRequest presentation_dto.TextMessageDto // 假设 TextMessage 已定义
 
 	// decode request
-	if err := json.NewDecoder(r.Body).Decode(&textMessage); err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&textMessageRequest); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	// use usecase to call grpc lient
-	response, err := s.usecase.SendTextToBackend(textMessage)
+	response, err := s.usecase.SendTextToBackend(textMessageRequest.TextMessage, textMessageRequest.sessionId)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

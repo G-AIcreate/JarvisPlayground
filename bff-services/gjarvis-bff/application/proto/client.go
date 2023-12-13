@@ -6,7 +6,7 @@ import (
 	"log"
 	"time"
 
-	pb "github.com/JarvisPlayground/gjarvis-bff/proto"
+	pb "github.com/JarvisPlayground/gjarvis-bff/application/proto"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )

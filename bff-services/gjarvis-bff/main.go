@@ -13,8 +13,9 @@ func main() {
 	log.Printf("Server started")
 	r := chi.NewRouter()
 
+	sendMessageUsecase := usecase.NewSendMessageUsecase()
 	// todo add wire
-	//sendMessageController := controller.NewSendMessageController(*dependency.InitSendMessageUsecase())
+	sendMessageController := controller.NewSendMessageController(sendMessageUsecase)
 	sendMessageController.SetupSendMessageRoutes(r)
 
 	log.Fatal(http.ListenAndServe("localhost:10000", r))
