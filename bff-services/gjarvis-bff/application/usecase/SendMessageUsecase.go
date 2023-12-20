@@ -1,30 +1,39 @@
 package usecase
-import(
+
+import (
 	// todo import problem needs to be fixed
-	_ grpcclient "gjarvis-bff/application/proto"
-	model "gjarvis-bff/application/model"
-	pb "github.com/JarvisPlayground/gjarvis-bff/application/proto"
+
+	model "github.com/JarvisPlayground/gjarvis-bff/application/model"
+
+	pb "github.com/JarvisPlayground/gjarvis-bff/application/gjarvisproto"
+
+	infra "github.com/JarvisPlayground/gjarvis-bff/infrastructure"
 )
+
 type SendMessageUsecase struct {
+
 }
 
-func SendMessageUsecase() *SendMessageUsecase {
-	return &SendMessageUsecase
+func NewSendMessageUsecase() *SendMessageUsecase {
+	return &SendMessageUsecase{}
 }
 
 // SendTextToBackend 调用 gRPC 客户端
 func (usecase *SendMessageUsecase) SendTextToBackend(textMessage string, sessionId string) (*model.JarvisResponse, error) {
-    request := &pb.TextMessage {
+    request := &pb.TextRequest {
 		SessionId: sessionId,
 		TextMessage: textMessage,
 	}
-	response, err := grpcclient.processTextMessage(request)
+	i := infra.GrpcClient{}
+	response, err := i.ProcessTextMessage(request)
 	if err != nil {
 		return nil, err
 	}
+	text := response.GetTextAnswer()
+	audio := response.GetAudioAnswer()
 	answer := &model.JarvisResponse{
-		TextAnswer: response.GetTextAnswer(),
-		AudioAnswer: response.GetAudioAnswer(),
+		TextAnswer: model.TextAnswer(text),
+		AudioAnswer: model.AudioAnswer(audio),
 	}
-	return answer;
+	return answer, err;
 }

@@ -4,11 +4,10 @@ import (
 	"encoding/json"
 	"net/http"
 
-	// todo import problem needs to be fixed
-	usecase "gjarvis-bff/application/usecase"
-	presentation_dto "gjarvis-bff/presentation/dto"
+	usecase "github.com/JarvisPlayground/gjarvis-bff/application/usecase"
+	presentation_dto "github.com/JarvisPlayground/gjarvis-bff/presentation/dto"
 
-	_ "github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5"
 )
 
 func (controller *SendMessageController) SetupSendMessageRoutes(r chi.Router) {
@@ -37,7 +36,7 @@ func (s *SendMessageController) SendText(w http.ResponseWriter, r *http.Request)
 	}
 
 	// use usecase to call grpc lient
-	response, err := s.usecase.SendTextToBackend(textMessageRequest.TextMessage, textMessageRequest.sessionId)
+	response, err := s.usecase.SendTextToBackend(textMessageRequest.TextMessage, textMessageRequest.SessionId)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

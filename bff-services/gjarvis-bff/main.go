@@ -3,10 +3,13 @@ package main
 import (
 	"log"
 	"net/http"
+
 	// todo import problem needs to be fixed
-	_ "github.com/go-chi/chi/v5"
-	_ controller "gjarvis-bff/presentation/controller"
-	usecase "gjarvis-bff/application/usecase"
+	controller "github.com/JarvisPlayground/gjarvis-bff/presentation/controller"
+
+	usecase "github.com/JarvisPlayground/gjarvis-bff/application/usecase"
+
+	"github.com/go-chi/chi/v5"
 )
 
 func main() {
@@ -14,8 +17,7 @@ func main() {
 	r := chi.NewRouter()
 
 	sendMessageUsecase := usecase.NewSendMessageUsecase()
-	// todo add wire
-	sendMessageController := controller.NewSendMessageController(sendMessageUsecase)
+	sendMessageController := controller.NewSendMessageController(*sendMessageUsecase)
 	sendMessageController.SetupSendMessageRoutes(r)
 
 	log.Fatal(http.ListenAndServe("localhost:10000", r))

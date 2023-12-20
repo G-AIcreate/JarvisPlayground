@@ -9,6 +9,7 @@ import (
 
 	pb "github.com/JarvisPlayground/gjarvis-service/proto"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 )
 
 var (
@@ -21,19 +22,19 @@ type server struct {
 }
 
 // SayHello implements helloworld.GreeterServer
-func (s *server) JarvisHello(ctx context.Context, in *pb.Request) (*pb.Reply, error) {
-	log.Printf("Received: %v", in.GetName())
-	return &pb.Reply{Message: "Hello " + in.GetName()}, nil
+func (s *server) JarvisHello(ctx context.Context, req *pb.Request) (*pb.Reply, error) {
+	log.Printf("Received: %v", req.GetName())
+	return &pb.Reply{Message: "Hello " + req.GetName()}, nil
 }
 
 // gjarvisproto.GJarvisServiceServer の SendText メソッドの実現
-func (s *server) SendText(ctx context.Context, in *pb.TextRequest) (*pb.JarvisResponse, error) {
-	log.Printf("Received text message: %s", in.GetTextMessage())
+func (s *server) SendText(ctx context.Context, req *pb.TextRequest) (*pb.JarvisResponse, error) {
+	log.Printf("Received text message: %s", req.GetTextMessage())
 	// テキストをカストマイズする処理
-	textAnswer := "Processed: " + in.GetTextMessage()
+	textAnswer := "Processed: " + req.GetTextMessage()
 
 	response := &pb.JarvisResponse{
-		SessionId:   in.GetSessionId(),
+		SessionId:   req.GetSessionId(),
 		TextAnswer:  textAnswer,
 		AudioAnswer: nil, // audio追加する
 	}
@@ -49,6 +50,9 @@ func main() {
 	}
 	s := grpc.NewServer()
 	pb.RegisterGJarvisServiceServer(s, &server{})
+
+	reflection.Register(s);
+
 	log.Printf("server listening at %v", lis.Addr())
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
