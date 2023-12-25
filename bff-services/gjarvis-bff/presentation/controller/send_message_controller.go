@@ -11,8 +11,9 @@ import (
 )
 
 func (controller *SendMessageController) SetupSendMessageRoutes(r chi.Router) {
+
+	r.Post("/api/gjarvis/send_text", controller.SendText)
 	// r.Get("/gjarvis/request_sessionId", controller.RequestSessionId)
-	r.Post("/gjarvis/send_text", controller.SendText)
 	// r.Post("/gjarvis/send_audio}", controller.SendAudio)
 }
 
@@ -26,16 +27,16 @@ func NewSendMessageController(usecase usecase.SendMessageUsecase) *SendMessageCo
 
 // SendText - Send text message to jarvis
 func (s *SendMessageController) SendText(w http.ResponseWriter, r *http.Request) {
-	// todo define TextMessage
-	var textMessageRequest presentation_dto.TextMessageDto // 假设 TextMessage 已定义
 
+	var textMessageRequest presentation_dto.TextMessageDto 
+	
 	// decode request
 	if err := json.NewDecoder(r.Body).Decode(&textMessageRequest); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	// use usecase to call grpc lient
+	// use usecase to call grpc client
 	response, err := s.usecase.SendTextToBackend(textMessageRequest.TextMessage, textMessageRequest.SessionId)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

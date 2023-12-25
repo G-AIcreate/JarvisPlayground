@@ -31,7 +31,7 @@ func (s *server) JarvisHello(ctx context.Context, req *pb.Request) (*pb.Reply, e
 func (s *server) SendText(ctx context.Context, req *pb.TextRequest) (*pb.JarvisResponse, error) {
 	log.Printf("Received text message: %s", req.GetTextMessage())
 	// テキストをカストマイズする処理
-	textAnswer := "Processed: " + req.GetTextMessage()
+	textAnswer := "Hello: " + req.GetTextMessage()
 
 	response := &pb.JarvisResponse{
 		SessionId:   req.GetSessionId(),

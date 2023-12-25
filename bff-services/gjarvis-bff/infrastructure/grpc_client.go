@@ -44,7 +44,7 @@ func(i *GrpcClient) ProcessTextMessage(request *pb.TextRequest) (*pb.JarvisRespo
 		log.Fatalf("could not send text: %v", err)
 		return nil, err
 	}
-	log.Printf("send text: %s", &response.TextAnswer)
+	log.Printf("send text: %s", response.TextAnswer)
 
 	return response, nil
 }

@@ -18,7 +18,7 @@ func NewSendMessageUsecase() *SendMessageUsecase {
 	return &SendMessageUsecase{}
 }
 
-// SendTextToBackend 调用 gRPC 客户端
+// SendTextToBackend call gRPC client
 func (usecase *SendMessageUsecase) SendTextToBackend(textMessage string, sessionId string) (*model.JarvisResponse, error) {
     request := &pb.TextRequest {
 		SessionId: sessionId,
