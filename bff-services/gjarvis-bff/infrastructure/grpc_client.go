@@ -40,6 +40,7 @@ func(i *GrpcClient) ProcessTextMessage(request *pb.TextRequest) (*pb.JarvisRespo
 	defer cancel()
 	// backend serviceを呼び出す
 	response, err := client.SendText(ctx, grpcRequest)
+	// log.Printf("Response: %s", response.TextAnswer)
 	if err != nil {
 		log.Fatalf("could not send text: %v", err)
 		return nil, err
