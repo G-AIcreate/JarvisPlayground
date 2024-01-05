@@ -14,12 +14,24 @@ response_queue = channel.queue_declare(queue='python_to_go').method.queue
 def callback(ch, method, properties, body):
     print(f"Received in Python from backendservice: {body}")
     # response = f"Processed by jarvis: {body.decode()} - in Python"
-    response = "Processed"
-    time.sleep(1)  # Simulating processing time
-    channel.basic_publish(exchange='', routing_key='python_to_go', body=response)
+    response = f"Processed: {body.decode()}"
+    time.sleep(3)  # Simulating processing time
+    print(f"Sending response back: {response} with CorrelationId: {properties.correlation_id}")
+    channel.basic_publish(
+        exchange='',
+        routing_key='python_to_go',
+        body=response,
+        properties=pika.BasicProperties(correlation_id=properties.correlation_id)
+    )
 channel.basic_consume(queue='go_to_python', on_message_callback=callback, auto_ack=True)
 print(' [*] Waiting for messages. To exit press CTRL+C')
 channel.start_consuming()
+
+# def main():
+#     return
+
+# if __name__=="__main__":
+#     main()
 
 # print(os.getcwd()+"33")
 # model_url = "https://huggingface.co/TheBloke/Llama-2-13B-chat-GGUF/blob/main/llama-2-13b-chat.Q5_K_M.gguf"
@@ -66,11 +78,7 @@ channel.start_consuming()
 #     return
     # ssss
 
-def main():
-    return
 
-if __name__=="__main__":
-    main()
 
 # response_iter = llm.stream_complete(getQuestion())
 # for response in response_iter:

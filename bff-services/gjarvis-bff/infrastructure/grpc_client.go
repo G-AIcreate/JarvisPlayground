@@ -16,15 +16,14 @@ var (
 	// client pb.GJarvisServiceClient
 )
 
-type GrpcClient struct{
-	
+type GrpcClient struct {
 }
 
-func(i *GrpcClient) ProcessTextMessage(request *pb.TextRequest) (*pb.JarvisResponse, error) {
+func (i *GrpcClient) ProcessTextMessage(request *pb.TextRequest) (*pb.JarvisResponse, error) {
 	// TODO switch to tls in PROD
 	conn, err := grpc.Dial(*addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
-		log.Fatalf("did not connect: %v", err)
+		log.Fatalf("grpc_client: did not connect: %v", err)
 		return nil, err
 	}
 	defer conn.Close()
@@ -36,16 +35,18 @@ func(i *GrpcClient) ProcessTextMessage(request *pb.TextRequest) (*pb.JarvisRespo
 	grpcRequest := &pb.TextRequest{TextMessage: request.TextMessage}
 
 	// Contact the server and print out its response.
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 	// backend serviceを呼び出す
+	log.Printf("grpc_client: send request to server from client: %s", request.TextMessage)
 	response, err := client.SendText(ctx, grpcRequest)
-	// log.Printf("Response: %s", response.TextAnswer)
+	log.Printf("aaaaaaaaa")
 	if err != nil {
-		log.Fatalf("could not send text: %v", err)
+		log.Fatalf("grpc_client: error in getting response from server: %v", err)
 		return nil, err
 	}
-	log.Printf("send text: %s", response.TextAnswer)
+	log.Printf("bbbbbbbb")
+	log.Printf("grpc_client: send text to usecase: %s", response.TextAnswer)
 
 	return response, nil
 }

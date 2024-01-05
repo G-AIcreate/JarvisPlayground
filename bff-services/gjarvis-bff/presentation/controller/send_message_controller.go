@@ -2,6 +2,7 @@ package controller
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 
 	usecase "github.com/JarvisPlayground/gjarvis-bff/application/usecase"
@@ -28,13 +29,14 @@ func NewSendMessageController(usecase usecase.SendMessageUsecase) *SendMessageCo
 // SendText - Send text message to jarvis
 func (s *SendMessageController) SendText(w http.ResponseWriter, r *http.Request) {
 
-	var textMessageRequest presentation_dto.TextMessageDto 
-	
+	var textMessageRequest presentation_dto.TextMessageDto
+	log.Printf("request from front1 %s", json.NewDecoder(r.Body))
 	// decode request
 	if err := json.NewDecoder(r.Body).Decode(&textMessageRequest); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+	log.Printf("request from front %s", textMessageRequest.TextMessage)
 
 	// use usecase to call grpc client
 	response, err := s.usecase.SendTextToBackend(textMessageRequest.TextMessage, textMessageRequest.SessionId)
