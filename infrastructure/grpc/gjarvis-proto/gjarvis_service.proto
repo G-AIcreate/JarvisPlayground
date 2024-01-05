@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+option go_package = ".;gjarvisproto";
+
+package gjarvisproto;
+
+service GJarvisService {
+    rpc JarvisHello (Request) returns (Reply) {}
+    rpc SendText (TextRequest) returns (JarvisResponse) {}
+}
+
+message Request {
+    string name = 1;
+    int64 age = 2;
+}
+
+message Reply {
+    string message = 1;
+}
+
+message TextRequest {
+    string sessionId = 1;
+    string textMessage = 2;
+}
+
+message JarvisResponse {
+    string sessionId = 1;
+    string textAnswer = 2;
+    bytes audioAnswer = 3;
+}

@@ -9,12 +9,7 @@
       <v-divider style="color: white"></v-divider>
 
       <v-list :lines="false" density="compact" nav>
-        <v-list-item
-          v-for="(item, i) in items"
-          :key="i"
-          :value="item"
-          color="blue"
-        >
+        <v-list-item v-for="(item, i) in items" :key="i" :value="item" color="blue">
           <template v-slot:prepend>
             <v-icon :icon="item.icon"></v-icon>
           </template>
@@ -26,11 +21,7 @@
 
     <v-main>
       <v-container fluid class="pa-0 pt-3">
-        <v-row
-          v-for="(msg, index) in mergeMsgs"
-          :key="index"
-          :class="msg.class"
-        >
+        <v-row v-for="(msg, index) in userMsgs" :key="index" :class="msg.class">
           <v-spacer />
           <v-col cols="1" class="d-flex justify-center align-center">
             <v-icon :icon="msg.icon"></v-icon>
@@ -44,30 +35,15 @@
         </v-row>
       </v-container>
     </v-main>
-    <v-footer app
-      ><v-row class="d-flex align-center">
+    <v-footer app><v-row class="d-flex align-center">
         <v-spacer />
         <v-col cols="10">
-          <v-textarea
-            rows="1"
-            max-rows="5"
-            auto-grow
-            v-model="newUserMsg"
-            prepend-inner-icon="mdi-microphone"
-            @click:prepend-inner="voiceInput()"
-            hide-details="auto"
-            placeholder="Send a message"
-            style="background: white"
-            @keydown.enter.exact.prevent
-            @keydown.enter="checkPreSend(newUserMsg) ?? sendMsg(newUserMsg)"
-            ><template #append-inner>
-              <v-btn
-                small
-                :disabled="checkPreSend(newUserMsg)"
-                icon="mdi-send"
-                @click="sendMsg(newUserMsg)"
-              ></v-btn></template
-          ></v-textarea>
+          <v-textarea rows="1" max-rows="5" auto-grow v-model="newUserMsg" prepend-inner-icon="mdi-microphone"
+            @click:prepend-inner="voiceInput()" hide-details="auto" placeholder="Send a message" style="background: white"
+            @keydown.enter.exact.prevent @keydown.enter="checkPreSend(newUserMsg) ?? sendMsgApi()"><template
+              #append-inner>
+              <v-btn small :disabled="checkPreSend(newUserMsg)" icon="mdi-send"
+                @click="sendMsgApi"></v-btn></template></v-textarea>
         </v-col>
         <v-spacer />
       </v-row>
@@ -76,6 +52,7 @@
 </template>
 
 <script setup>
+import axios from "axios";
 import { ref } from "vue";
 const items = ref([
   { text: "My Files", icon: "mdi-folder" },
@@ -89,6 +66,13 @@ const items = ref([
 
 const newUserMsg = ref("");
 const mergeMsgs = ref([]);
+const userMsgs = ref([])
+const latestUserMsgs = computed(() => {
+  return userMsgs.value
+})
+
+const sessionId = ref("1")
+const textMessage = ref("Hello World")
 
 const voiceInput = () => {
   alert("Your voice is coming soon");
@@ -100,22 +84,44 @@ const checkPreSend = () => {
   }
 };
 
-const sendMsg = (msg) => {
-  mergeMsgs.value.push({ icon: "mdi-account", msg: msg, class: "user" });
-  const newResMsg = "Your Message is 「" + msg + "」";
-  mergeMsgs.value.push({
-    icon: "$vuetify",
-    msg: newResMsg,
-    class: "llama",
-  });
+// const sendMsg = (msg) => {
+//   mergeMsgs.value.push({ icon: "mdi-account", msg: msg, class: "user" });
+//   const newResMsg = "Your Message is 「" + msg + "」";
+//   mergeMsgs.value.push({
+//     icon: "$vuetify",
+//     msg: newResMsg,
+//     class: "llama",
+//   });
+//   newUserMsg.value = "";
+// };
+
+const sendMsgApi = async () => {
+  userMsgs.value.push({ icon: "mdi-account", msg: newUserMsg.value, class: "user" })
+  const body = { sessionId: sessionId.value, textMessage: newUserMsg.value }
+  // console.log(body)
+  console.log(newUserMsg.value)
   newUserMsg.value = "";
-};
+  try {
+    await axios.post("http://localhost:8080/api/gjarvis/send_text", body)
+      .then((response) => {
+        const receivedMsg = response.data.TextAnswer;
+        userMsgs.value.push({ icon: "mdi-account", msg: receivedMsg, class: "user" });
+      })
+    // .then((response) => JSON.stringify(response.data))
+    // .then((json) => console.log(json))
+    // .then((json) => userMsgs.value.push({ icon: "mdi-account", msg: json.TextMessage, class: "user" }))
+    // .catch((error) => console.log(error))
+  } catch (error) {
+    console.log(error);
+  }
+}
 </script>
 <style scoped>
 .v-navigation-drawer {
   color: white;
   background: rgb(36, 36, 36);
 }
+
 .v-main,
 .v-footer {
   background: rgb(111, 116, 129);
@@ -138,6 +144,7 @@ const sendMsg = (msg) => {
 
 .v-btn {
   border-radius: 0;
+
   &:enabled {
     color: white;
     background: #19c37d;
@@ -145,21 +152,21 @@ const sendMsg = (msg) => {
 }
 </style>
 
-<!-- <script lang="ts" setup>
-import { ref, onMounted } from "vue";
-import axios from "axios";
+// <!-- <script lang="ts" setup>
+// import { ref, onMounted } from "vue";
+// import axios from "axios";
 
-const message = ref('');
+// const message = ref('');
 
-onMounted(async () => {
-    // try {
-    //     const response = 
-    await axios.get("http://localhost:8080/api/v1/voice-assistance-service/hello")
-        .then((response) => message.value = response.data)
-        .catch((error) => console.log(error))
-    //     message.value = response.data;
-    // } catch (error) {
-    //     console.log(error);
-    // }
-}); -->
-<!-- </script> -->
+// onMounted(async () => {
+//     // try {
+//     //     const response = 
+//     await axios.get("http://localhost:8080/api/v1/voice-assistance-service/hello")
+//         .then((response) => message.value = response.data)
+//         .catch((error) => console.log(error))
+//     //     message.value = response.data;
+//     // } catch (error) {
+//     //     console.log(error);
+//     // }
+// }); -->
+// <!-- </script> -->

@@ -1,0 +1,135 @@
+openapi: 3.0.3
+info:
+  title: Swagger Gjarvis - OpenAPI 3.0
+  version: 1.0.11
+paths:
+  /generate-session:
+    get:
+      tags:
+        - gjarvis
+      summary: Send sessionId request to jarvis
+      description: Send sessionId requeste to jarvis
+      operationId: requestSessionId
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/JarvisResponse"
+        "405":
+          description: Invalid input
+  /text-message:
+    post:
+      tags:
+        - gjarvis
+      summary: Send text message to jarvis
+      description: Send text message to jarvis
+      operationId: sendText
+      requestBody:
+        description: Get answer from jarvis
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TextMessage"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SessionId"
+        "405":
+          description: bad request
+  /audio-message:
+    post:
+      tags:
+        - gjarvis
+      summary: Send audio message to jarvis
+      description: Send audio message to jarvis
+      operationId: sendAudio
+      requestBody:
+        description: Get answer from jarvis
+        content:
+          audio/mp3:
+            schema:
+              $ref: "#/components/schemas/AudioMessage"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JarvisResponse"
+components:
+  schemas:
+    SessionId:
+      type: string
+      format: uuid
+    TextMessage:
+      required:
+        - sessionId
+        - textMessage
+      type: object
+      properties:
+        sessionId:
+          $ref: "#/components/schemas/SessionId"
+        textMessage:
+          type: string
+    AudioMessage:
+      required:
+        - sessionId
+        - audioMessage
+      type: object
+      properties:
+        sessionId:
+          $ref: "#/components/schemas/SessionId"
+        audioMessage:
+          type: string
+          format: binary
+    JarvisResponse:
+      required:
+        - textAnswer
+      type: object
+      properties:
+        sessionId:
+          $ref: "#/components/schemas/SessionId"
+        textAnswer:
+          type: string
+        audioAnswer:
+          type: string
+          format: binary
+
+  # requestBodies:
+  #   Pet:
+  #     description: Pet object that needs to be added to the store
+  #     content:
+  #       application/json:
+  #         schema:
+  #           $ref: '#/components/schemas/Pet'
+  #       application/xml:
+  #         schema:
+  #           $ref: '#/components/schemas/Pet'
+  #   UserArray:
+  #     description: List of user object
+  #     content:
+  #       application/json:
+  #         schema:
+  #           type: array
+  #           items:
+  #             $ref: '#/components/schemas/User'
+  securitySchemes:
+    gjarvis_auth:
+      type: oauth2
+      flows:
+        implicit:
+          authorizationUrl: http://localhost:8080/api/v1/voice-assistance-service/oauth/authorize
+          scopes:
+            write:jarvis: ask jarvis question
+            read:jarvis: get answer from jarvis
+    api_key:
+      type: apiKey
+      name: api_key
+      in: header
